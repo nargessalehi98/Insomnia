@@ -1,7 +1,11 @@
 import javax.swing.*;
 
+/**
+ * Run the program
+ * @author Narges Salehi
+ */
 public class Main {
-
+    //choosing  look and fell
     public static void main(String[] args) {
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -13,6 +17,7 @@ public class Main {
         } catch (Exception e) {
             // If Nimbus is not available, you can set the GUI to another look and feel.
         }
+        //creat a new GUI
 	GUI gui=new GUI();
     }
 }
