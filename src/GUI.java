@@ -30,6 +30,8 @@ public class GUI {
     JTextArea newValue;
     JPanel header;
     JTabbedPane tab;
+    JPanel jPanel;
+    JTree jTree;
     //check if system tray is on or not
     boolean checkSystemTray = false;
     //go to next line to add component - count lines
@@ -40,6 +42,9 @@ public class GUI {
     static boolean toggleSidebar = false;
     //check how many time we use system tray
     static int runOnce;
+    //check theme
+    static boolean checkTheme=false;
+
 
     /**
      * creat a new GUI
@@ -56,14 +61,14 @@ public class GUI {
         windowListener windowListener = new windowListener();
         window.addWindowListener(windowListener);
         //creat a new border
-        Border border = BorderFactory.createLineBorder(Color.white, 1);
+        Border border = BorderFactory.createLineBorder(Color.gray, 1);
         //creat panels of insomnia
         JPanel left = new JPanel();
         JPanel middle = new JPanel();
         JPanel right = new JPanel();
-        addJPanel(left, Color.white, border, 600, 400);
-        addJPanel(middle, Color.white, border, 600, 400);
-        addJPanel(right, Color.white, border, 600, 400);
+        addJPanel(left, new Color(0x575199), border, 600, 400);
+        addJPanel(middle, Color.darkGray, border, 600, 400);
+        addJPanel(right, Color.darkGray, border, 600, 400);
         //start from top of insomnia
         //creat and design top JMenuBar
         //creat a listener for top Menu -menubar
@@ -73,40 +78,86 @@ public class GUI {
         topJMenu.setPreferredSize(new Dimension(0, 25));
         //creat menu for top menu bar
         JMenu application = new JMenu("Application");
+        //set Mnemonic for application menu Alt+a
         application.setMnemonic('a');
+        //creating menu options
         mOptions = new JMenuItem("Options");
+        //set accelerator for item
         mOptions.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.SHIFT_MASK));
+        //creating menu options
         exit = new JMenuItem("Exit");
+        //set accelerator for item
         exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.SHIFT_MASK));
+        //item to set theme
+        JMenuItem theme=new JMenuItem("Dark/Light");
+        theme.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.SHIFT_MASK));
+        //add action listener for set theme
+        theme.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //boolean checks present theme
+                if(!checkTheme){
+                    jPanel.setBackground(Color.white);
+                    jTree.setBackground(Color.white);
+                    middle.setBackground(Color.white);
+                    right.setBackground(Color.white);
+                    checkTheme=true;
+                }else{
+                    jPanel.setBackground(Color.darkGray);
+                    jTree.setBackground(Color.darkGray);
+                    middle.setBackground(Color.darkGray);
+                    right.setBackground(Color.darkGray);
+                    checkTheme=false;
+                }
+            }
+        });
+        //add action listener to items
         exit.addActionListener(topMenuHandler);
         mOptions.addActionListener(topMenuHandler);
+        //adding item to menu
         application.add(mOptions);
         application.add(exit);
-
+        application.add(theme);
+        //creat view menu
         JMenu view = new JMenu("View");
+        //set Mnemonic for application menu Alt+v
         view.setMnemonic('v');
+        //creating menu options
         tSidebar = new JMenuItem("Toggle Sidebar");
+        //set accelerator for item
         tSidebar.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.SHIFT_MASK));
+        //creating menu options
         tFullScreen = new JMenuItem("Toggle Full Screen");
+        //set accelerator for item
         tFullScreen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.SHIFT_MASK));
+        //add action listener to items
         tSidebar.addActionListener(topMenuHandler);
         tFullScreen.addActionListener(topMenuHandler);
+        //adding item to menu
         view.add(tSidebar);
         view.add(tFullScreen);
-
+        //creating help menu
         JMenu help = new JMenu("Help");
+        //set Mnemonic for application menu Alt+h
         help.setMnemonic('h');
+        //creating menu options
         iHelp = new JMenuItem("Help");
+        //set accelerator for item
         iHelp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.SHIFT_MASK));
+        //creating menu options
         about = new JMenuItem("About");
+        //set accelerator for item
         about.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.SHIFT_MASK));
         iHelp.addActionListener(topMenuHandler);
         about.addActionListener(topMenuHandler);
+        //adding item to menu
         help.add(iHelp);
         help.add(about);
+        //adding menu to menubar
         topJMenu.add(application);
         topJMenu.add(view);
         topJMenu.add(help);
+        //add menu bar to panel
         window.add(topJMenu, BorderLayout.PAGE_START);
         //**************************************************************************************************************
         //start designing left side of insomnia
@@ -118,6 +169,8 @@ public class GUI {
         //creat and adding component
         JLabel Insomnia = new JLabel("  Insomnia");
         Insomnia.setFont(new Font("Arial", 14, 20));
+        Insomnia.setPreferredSize(new Dimension(0,50));
+        Insomnia.setForeground(Color.white);
         jMenuBar.add(Insomnia, BorderLayout.LINE_START);
         JMenu jMenu = new JMenu("▾");
         JMenuItem WorkSpaceSetting = new JMenuItem("WorkSpace Setting");
@@ -132,8 +185,8 @@ public class GUI {
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.PAGE_START;
-        left.add(jMenuBar, gbc);
-
+        left.add(Insomnia, gbc);
+        //adding component - next faze
         JMenuBar jMenuBar1 = new JMenuBar();
         jMenuBar1.setPreferredSize(new Dimension(0, 30));
         jMenuBar1.setLayout(new BorderLayout());
@@ -151,10 +204,11 @@ public class GUI {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         left.add(jMenuBar1, gbc);
-
+        //adding component - next faze
         JMenuBar jMenuBar2 = new JMenuBar();
         jMenuBar2.setPreferredSize(new Dimension(0, 30));
         JTextArea jTextArea = new JTextArea("  ");
+        jTextArea.setBackground(Color.DARK_GRAY);
         jTextArea.setFont(new Font("Arial", 10, 10));
         jMenuBar2.add(jTextArea);
         gbc.gridy = 2;
@@ -165,32 +219,40 @@ public class GUI {
         jMenu2.add(newFolder);
         jMenu2.add(newRequest);
         left.add(jMenuBar2, gbc);
-
-
-        JPanel jPanel = new JPanel();
+        //creat and add panel for request
+         jPanel = new JPanel();
         jPanel.setLayout(new GridLayout(0, 1));
+        //creating JTree and nodes to grouping request
         DefaultMutableTreeNode node1 = new DefaultMutableTreeNode("My Folder");
         DefaultMutableTreeNode node2 = new DefaultMutableTreeNode("Get My Request");
         node1.add(node2);
-        JTree jTree = new JTree(node1);
+        //creat tree
+        jTree = new JTree(node1);
+        jTree.setBackground(Color.DARK_GRAY);
         gbc.gridy = 3;
         gbc.weightx = 1;
         gbc.weighty = 1;
         jPanel.add(jTree);
+        gbc.fill = GridBagConstraints.BOTH;
+        //add render to tree
         jTree.setCellRenderer(getDefaultTreeCellRenderer());
-        jTree.setCellRenderer(getDefaultTreeCellRenderer());
-        jTree.setCellRenderer(getDefaultTreeCellRenderer());
+        //add mouse listener to tree
         jTree.addMouseListener(getMouseListener(jTree));
+        //add focus listener to tree
         jTree.addFocusListener(getFocusListener(jTree));
+        //add tree to panel
         left.add(jPanel, gbc);
         //**************************************************************************************************************
         //middle side of panel
         //designing middle panel
         middle.setLayout(new GridBagLayout());
+        //creat and adding menubar
         JMenuBar URL = new JMenuBar();
         URL.setPreferredSize(new Dimension(0, 50));
+        //text field to get URL
         JTextField urlField = new JTextField();
         urlField.setPreferredSize(new Dimension(0, 20));
+        //creating and adding item to JMenu
         JMenu methods = new JMenu(" Get  ▾");
         JMenuItem get = new JMenuItem("GET");
         JMenuItem post = new JMenuItem("POST");
@@ -211,8 +273,10 @@ public class GUI {
         ButtonListener buttonListener = new ButtonListener();
         URL.add(methods, BorderLayout.LINE_START);
         URL.add(urlField, BorderLayout.CENTER);
+        //creat send button to sending URL
         send = new JButton("Send");
         URL.add(send, BorderLayout.LINE_END);
+        //save button to save request
         save = new JButton("Save");
         save.addActionListener(buttonListener);
         URL.add(save);
@@ -225,9 +289,11 @@ public class GUI {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         middle.add(URL, gbc);
-
+        //creat a tabbed pane to keep panels
         tab = new JTabbedPane();
+        tab.setBackground(Color.darkGray);
         JPanel body = new JPanel();
+        body.setBackground(Color.DARK_GRAY);
         tab.add("body", body);
         JComboBox massageBodyType = new JComboBox();
         massageBodyType.addItem("Form Data");
@@ -240,27 +306,35 @@ public class GUI {
         gbc.weighty = 1;
         body.add(massageBodyType, gbc);
         JPanel auth = new JPanel();
+        auth.setBackground(Color.darkGray);
         tab.add("Auth", auth);
         JPanel query = new JPanel();
+        query.setBackground(Color.darkGray);
         tab.add("Query", query);
-
+        //set header
         header = new JPanel();
         header.setLayout(null);
+        header.setBackground(Color.darkGray);
+        //creat listener for text area
         mouseClicker clicker = new mouseClicker();
+        //creating text area
         newHeader = new JTextArea("Add New Header");
-        newHeader.setBackground(Color.lightGray);
+        newHeader.setBackground(Color.darkGray);
+        newHeader.setForeground(Color.gray);
         newHeader.addMouseListener(clicker);
         tab.add("Header", header);
         newValue = new JTextArea("Add New Value");
+        newValue.setForeground(Color.gray);
         newValue.addMouseListener(clicker);
-        newValue.setBackground(Color.lightGray);
+        newValue.setBackground(Color.darkGray);
         newHeader.setSize(120, 30);
         newValue.setSize(120, 30);
         newValue.setLocation(120, 0);
         header.add(newValue);
         header.add(newHeader);
-
+        //creating and adding other panels - next faze
         JPanel docs = new JPanel();
+        docs.setBackground(Color.darkGray);
         tab.add("Docs", docs);
         gbc.gridy = 1;
         gbc.gridx = 0;
@@ -310,11 +384,12 @@ public class GUI {
         JTabbedPane tab1 = new JTabbedPane();
         //creat a panel
         JPanel preview = new JPanel();
+        preview.setBackground(Color.darkGray);
         //set layout for panel
         preview.setLayout(new GridBagLayout());
         //creat a text area for massage body
         JTextArea massageBody = new JTextArea();
-        massageBody.setBackground(Color.lightGray);
+        massageBody.setBackground(Color.darkGray);
         //add panel to tabbedPane
         tab1.add("Preview", preview);
         //creat a combo box to keep massage type
@@ -339,13 +414,16 @@ public class GUI {
         preview.add(massageBody, gbc);
         //creat a panel for header
         JPanel header2 = new JPanel();
+        header2.setBackground(Color.darkGray);
         //set layout for header
         header2.setLayout(new GridBagLayout());
         //add header to tabbedPane
         tab1.add("Header", header2);
         //add item to header
         JLabel name = new JLabel("Name");
+        name.setForeground(Color.gray);
         JLabel value = new JLabel("value");
+        value.setForeground(Color.gray);
         //set gridBagConstrains for adding item
         gbc.gridy = 0;
         gbc.gridx = 0;
@@ -365,8 +443,10 @@ public class GUI {
         header2.add(copyToClipboard, gbc);
         //creat other panel
         JPanel cookies = new JPanel();
+        cookies.setBackground(Color.darkGray);
         tab1.add("Cookies", cookies);
         JPanel timeline = new JPanel();
+        timeline.setBackground(Color.darkGray);
         tab1.add("Timeline", timeline);
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -407,8 +487,9 @@ public class GUI {
 
     //------------------------------------------------------------------------------------------------------------------
     /**
-     * this class has copied from stackOverFlow
-     * @return
+     * set JTree render
+     * @return defaultTreeCellRenderer
+     * copied from stack over flow
      */
     private static DefaultTreeCellRenderer getDefaultTreeCellRenderer() {
         DefaultTreeCellRenderer defaultTreeCellRenderer = new DefaultTreeCellRenderer();
@@ -419,6 +500,11 @@ public class GUI {
         return defaultTreeCellRenderer;
     }
 
+    /**
+     * check JTree focus lost of gained
+     * @param tree JTree
+     * @return new FocusListener
+     */
     private static FocusListener getFocusListener(JTree tree) {
         return new FocusListener() {
             @Override
@@ -434,6 +520,11 @@ public class GUI {
         };
     }
 
+    /**
+     * check if outside of JTree has clicked - clear selections
+     * @param tree JTree
+     * @return new MouseListener
+     */
     private static MouseListener getMouseListener(JTree tree) {
         return new MouseListener() {
             @Override
@@ -474,12 +565,15 @@ public class GUI {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            //next faze
             if (e.getSource() == iHelp) {
 
             }
+            //exit program
             if (e.getSource().equals(exit)) {
                 System.exit(0);
             }
+            //ask for setting system tray and followRedirect
             if (e.getSource().equals(mOptions)) {
                 JFrame smallFrame = new JFrame();
                 smallFrame.setLayout(new GridLayout(3, 1));
@@ -494,7 +588,7 @@ public class GUI {
                 smallFrame.add(systemTray);
                 smallFrame.add(followRedirect);
             }
-
+            //make window full screen
             if (e.getSource().equals(tFullScreen)) {
                 if (!fullScreen) {
                     window.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -505,6 +599,7 @@ public class GUI {
                     fullScreen = false;
                 }
             }
+            //make program toggle side bar
             if (e.getSource().equals(tSidebar)) {
                 if (!toggleSidebar) {
                     window.remove(jSplitPane1);
@@ -520,6 +615,7 @@ public class GUI {
                 }
 
             }
+            //show my information
             if (e.getSource().equals(about)) {
                 JFrame smallFrame = new JFrame();
                 smallFrame.setSize(300, 150);
@@ -535,6 +631,7 @@ public class GUI {
                 smallFrame.add(email);
                 smallFrame.add(id);
             }
+            //next faze
             if (e.getSource().equals(iHelp)) {
                 JFrame smallFrame = new JFrame();
                 smallFrame.setSize(100, 100);
@@ -547,13 +644,15 @@ public class GUI {
     }
 
     /**
-     * Performs listener for buttons
+     * Performs listener for save button
      */
     private class ButtonListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            //save buttons actions
             if (e.getSource().equals(save)) {
+                //creat new frame and ask for information
                 JFrame smallFrame = new JFrame("Save Request");
                 smallFrame.setSize(300, 300);
                 smallFrame.setLocation(120, 120);
@@ -604,12 +703,17 @@ public class GUI {
         }
     }
 
+    /**
+     * Performs listener for options menu items
+     */
     private class itemListener implements ItemListener {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
+            //next faze
             if (e.getItem() == followRedirect) {
             }
+            //set system tray on or off
             if (e.getItem() == systemTray) {
                 if (e.getStateChange() == ItemEvent.SELECTED)
                     checkSystemTray = true;
@@ -626,13 +730,19 @@ public class GUI {
     private class mouseClicker extends MouseAdapter {
 
         @Override
+        /**
+         * Perform mouse pressed actions
+         */
         public void mousePressed(MouseEvent e) {
+            //this int keep available coordinates of y
             int temp = headerCounter * 30;
+            //creat new component
             JTextArea tempValue = new JTextArea();
             tempValue.setBackground(Color.lightGray);
             JTextArea tempName = new JTextArea();
             tempName.setBackground(Color.lightGray);
             JCheckBox tempActive = new JCheckBox();
+            //add listener for active checkbox
             tempActive.addActionListener(e12 -> {
                 if (tempName.isEditable() || tempValue.isEditable()) {
                     tempName.setEditable(false);
@@ -642,6 +752,7 @@ public class GUI {
                     tempValue.setEditable(true);
                 }
             });
+            //add listener for delete button
             JButton tempTrash = new JButton("✕");
             tempTrash.addActionListener(e1 -> {
                 if (e1.getSource().equals(tempTrash)) {
@@ -654,6 +765,7 @@ public class GUI {
 
                 }
             });
+            //set location and size of each component
             tempValue.setSize(120, 30);
             tempValue.setLocation(120, temp);
             tempName.setSize(120, 30);
@@ -662,6 +774,7 @@ public class GUI {
             tempActive.setLocation(240, temp);
             tempTrash.setSize(40, 30);
             tempTrash.setLocation(260, temp);
+            //add component to middle panel
             header.add(tempName);
             header.add(tempValue);
             header.add(tempActive);
@@ -679,6 +792,7 @@ public class GUI {
         public void windowClosing(WindowEvent e) {
             //check if program already is in system tray or not
             if (runOnce == 0 && checkSystemTray) {
+                //put program in menu bar - systemTray
                 setSystemTray();
                 runOnce++;
             }
@@ -695,52 +809,41 @@ public class GUI {
             System.out.println("SystemTray is not supported");
             return;
         }
+        //creat a popup menu
         final PopupMenu popup = new PopupMenu();
+        //creat an icon
         Image icon = Toolkit.getDefaultToolkit().getImage("insomnia.png");
+        //creat a trayIcon
         final TrayIcon trayIcon = new TrayIcon(icon, "Tray", popup);
+        //get system Tray
         final SystemTray tray = SystemTray.getSystemTray();
 
         // Create a pop-up menu components
-        MenuItem aboutItem = new MenuItem("Insomnia");
-        aboutItem.addActionListener(e -> {
-            if (e.getSource().equals(aboutItem))
+        MenuItem insomnia = new MenuItem("Insomnia");
+        //add listener fot back to program
+        insomnia.addActionListener(e -> {
+            if (e.getSource().equals(insomnia))
                 window.setVisible(true);
         });
-        CheckboxMenuItem cb1 = new CheckboxMenuItem("Set auto size");
-        CheckboxMenuItem cb2 = new CheckboxMenuItem("Set tooltip");
-        Menu displayMenu = new Menu("Display");
-        MenuItem errorItem = new MenuItem("Error");
-        MenuItem warningItem = new MenuItem("Warning");
-        MenuItem infoItem = new MenuItem("Info");
-        MenuItem noneItem = new MenuItem("None");
+        //creat an item to exit
         MenuItem exitItem = new MenuItem("Exit");
+        //add listener for exit
         exitItem.addActionListener(e -> {
             if (e.getSource().equals(exitItem)) {
                 System.exit(0);
             }
         });
-
         // Add components to pop-up menu
-        popup.add(aboutItem);
-//        popup.addSeparator();
-//        popup.add(cb1);
-//        popup.add(cb2);
-//        popup.addSeparator();
-//        popup.add(displayMenu);
-//        displayMenu.add(errorItem);
-//        displayMenu.add(warningItem);
-//        displayMenu.add(infoItem);
-//        displayMenu.add(noneItem);
+        popup.add(insomnia);
         popup.add(exitItem);
-
+        //set popup menu
         trayIcon.setPopupMenu(popup);
-
+        //control exceptions
         try {
             tray.add(trayIcon);
         } catch (AWTException e) {
             System.out.println("TrayIcon could not be added.");
         }
-
     }
 }
 
