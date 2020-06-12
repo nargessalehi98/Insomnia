@@ -2,6 +2,7 @@ import javax.swing.*;
 
 /**
  * Run the program
+ *
  * @author Narges Salehi
  */
 public class Main {
@@ -20,4 +21,9 @@ public class Main {
         //creat a new GUI
 	GUI gui=new GUI();
     }
+
+//    public static void main(String[] args) throws IOException, InterruptedException {
+//      HTTPClient h = new HTTPClient();
+//
+//    }
 }

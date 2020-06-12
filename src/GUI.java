@@ -1,12 +1,23 @@
+import com.sun.net.httpserver.Headers;
+
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * present GUI of insomnia
+ *
  * @author Narges Salehi
  */
 public class GUI {
@@ -31,7 +42,14 @@ public class GUI {
     JPanel header;
     JTabbedPane tab;
     JPanel jPanel;
+    JLabel error;
+    JLabel tt;
     JTree jTree;
+    JMenuBar data;
+    JTextArea massageBody;
+    DefaultMutableTreeNode node1;
+    JTextArea nameValue;
+    JTextField urlField;
     //check if system tray is on or not
     boolean checkSystemTray = false;
     //go to next line to add component - count lines
@@ -43,8 +61,12 @@ public class GUI {
     //check how many time we use system tray
     static int runOnce;
     //check theme
-    static boolean checkTheme=false;
-
+    static boolean checkTheme = false;
+    static String method = "GET";
+    static String statusCode;
+    String Body;
+    String URL = "http://";
+    String directory = "narges";
 
     /**
      * creat a new GUI
@@ -89,25 +111,25 @@ public class GUI {
         //set accelerator for item
         exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.SHIFT_MASK));
         //item to set theme
-        JMenuItem theme=new JMenuItem("Dark/Light");
+        JMenuItem theme = new JMenuItem("Dark/Light");
         theme.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.SHIFT_MASK));
         //add action listener for set theme
         theme.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //boolean checks present theme
-                if(!checkTheme){
+                if (!checkTheme) {
                     jPanel.setBackground(Color.white);
                     jTree.setBackground(Color.white);
                     middle.setBackground(Color.white);
                     right.setBackground(Color.white);
-                    checkTheme=true;
-                }else{
+                    checkTheme = true;
+                } else {
                     jPanel.setBackground(Color.darkGray);
                     jTree.setBackground(Color.darkGray);
                     middle.setBackground(Color.darkGray);
                     right.setBackground(Color.darkGray);
-                    checkTheme=false;
+                    checkTheme = false;
                 }
             }
         });
@@ -169,7 +191,7 @@ public class GUI {
         //creat and adding component
         JLabel Insomnia = new JLabel("  Insomnia");
         Insomnia.setFont(new Font("Arial", 14, 20));
-        Insomnia.setPreferredSize(new Dimension(0,50));
+        Insomnia.setPreferredSize(new Dimension(0, 50));
         Insomnia.setForeground(Color.white);
         jMenuBar.add(Insomnia, BorderLayout.LINE_START);
         JMenu jMenu = new JMenu("▾");
@@ -220,14 +242,34 @@ public class GUI {
         jMenu2.add(newRequest);
         left.add(jMenuBar2, gbc);
         //creat and add panel for request
-         jPanel = new JPanel();
+        jPanel = new JPanel();
         jPanel.setLayout(new GridLayout(0, 1));
         //creating JTree and nodes to grouping request
-        DefaultMutableTreeNode node1 = new DefaultMutableTreeNode("My Folder");
-        DefaultMutableTreeNode node2 = new DefaultMutableTreeNode("Get My Request");
-        node1.add(node2);
+        node1 = new DefaultMutableTreeNode("Requests");
+        updateJTree(node1, Files.showDirectories());
         //creat tree
         jTree = new JTree(node1);
+        jTree.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                if (e.getPath().toString().contains(".txt")) {
+                    String oldPath = e.getPath().toString();
+                    String path = oldPath.replace(", ", "/");
+                    path = path.replace("[", "./");
+                    path = path.replace("]", "");
+                    try {
+                        Files.setMassageValues(path);
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    massageBody.setText(Files.Body);
+                    nameValue.setText(Files.HeadersOfMassage);
+                    error.setText(Files.statusCode+" "+Files.statusMassage+ "   ");
+                    tt.setText(Files.takedTime+" s  " +Files.byteCount + " B");
+                }
+            }
+        });
         jTree.setBackground(Color.DARK_GRAY);
         gbc.gridy = 3;
         gbc.weightx = 1;
@@ -250,15 +292,39 @@ public class GUI {
         JMenuBar URL = new JMenuBar();
         URL.setPreferredSize(new Dimension(0, 50));
         //text field to get URL
-        JTextField urlField = new JTextField();
+        urlField = new JTextField();
         urlField.setPreferredSize(new Dimension(0, 20));
         //creating and adding item to JMenu
         JMenu methods = new JMenu(" Get  ▾");
         JMenuItem get = new JMenuItem("GET");
+        get.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                method = "GET";
+            }
+        });
         JMenuItem post = new JMenuItem("POST");
+        post.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                method = "POST";
+            }
+        });
         JMenuItem put = new JMenuItem("PUT");
+        put.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                method = "Put";
+            }
+        });
         JMenuItem patch = new JMenuItem("PATCH");
         JMenuItem delete = new JMenuItem("DELETE");
+        delete.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                method = "DELETE";
+            }
+        });
         JMenuItem options = new JMenuItem("OPTIONS");
         JMenuItem head = new JMenuItem("HEAD");
         JMenuItem cm = new JMenuItem("Custom Method");
@@ -346,13 +412,22 @@ public class GUI {
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.fill = GridBagConstraints.BOTH;
         middle.add(tab, gbc);
+        send.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (urlField.getText() != null) {
+                    sendRequest();
+                    ((DefaultTreeModel) jTree.getModel()).reload();
+                }
+            }
+        });
         //**************************************************************************************************************
         //right side of insomnia
         //designing right panel
         //set gridBagLayout for panel
         right.setLayout(new GridBagLayout());
         //creat a menu bar to keep statusCode statusMassage and Time
-        JMenuBar data = new JMenuBar();
+        data = new JMenuBar();
         //set size for menu bar
         data.setPreferredSize(new Dimension(0, 50));
         //set layout for menu bar
@@ -362,11 +437,11 @@ public class GUI {
         //add item to menu bar
         data.add(time, BorderLayout.LINE_END);
         //creat item to keep statusMassage
-        JLabel error = new JLabel("Error  ");
+        error = new JLabel("Error  ");
         //add item to menu bar
         data.add(error, BorderLayout.LINE_START);
         //creat item to keep statusCode
-        JLabel tt = new JLabel("0 ms  0 B");
+        tt = new JLabel("  0 ms  0 B");
         //add item to menu bar
         data.add(tt, BorderLayout.CENTER);
         //set gridBagConstrains for add menu bar to right panel
@@ -388,7 +463,8 @@ public class GUI {
         //set layout for panel
         preview.setLayout(new GridBagLayout());
         //creat a text area for massage body
-        JTextArea massageBody = new JTextArea();
+        massageBody = new JTextArea();
+        JScrollPane jScrollPane = new JScrollPane(massageBody);
         massageBody.setBackground(Color.darkGray);
         //add panel to tabbedPane
         tab1.add("Preview", preview);
@@ -411,7 +487,7 @@ public class GUI {
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
         //add text area to panel
-        preview.add(massageBody, gbc);
+        preview.add(jScrollPane, gbc);
         //creat a panel for header
         JPanel header2 = new JPanel();
         header2.setBackground(Color.darkGray);
@@ -420,7 +496,7 @@ public class GUI {
         //add header to tabbedPane
         tab1.add("Header", header2);
         //add item to header
-        JLabel name = new JLabel("Name");
+        JLabel name = new JLabel("Name                      value");
         name.setForeground(Color.gray);
         JLabel value = new JLabel("value");
         value.setForeground(Color.gray);
@@ -428,18 +504,39 @@ public class GUI {
         gbc.gridy = 0;
         gbc.gridx = 0;
         gbc.weightx = 1;
-        gbc.weighty = 0;
+        gbc.weighty = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         header2.add(name, gbc);
         gbc.gridx = 1;
-        header2.add(value, gbc);
-        JButton copyToClipboard = new JButton("Copy to Clipboard");
+        // header2.add(value, gbc);
+        nameValue = new JTextArea();
+        nameValue.setBackground(Color.darkGray);
+        JScrollPane jScrollPane1 = new JScrollPane(nameValue);
+        jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         gbc.gridy = 1;
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.weightx = 1;
+        gbc.weighty = 12;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.WEST;
+        header2.add(jScrollPane1, gbc);
+        JButton copyToClipboard = new JButton("Copy to Clipboard");
+        copyToClipboard.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nameValue.selectAll();
+                nameValue.copy();
+            }
+        });
+        gbc.gridy = 2;
+        gbc.gridx = 0;
+        gbc.weightx = 0;
         gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.fill = GridBagConstraints.NONE;
         header2.add(copyToClipboard, gbc);
         //creat other panel
         JPanel cookies = new JPanel();
@@ -469,12 +566,32 @@ public class GUI {
         //add splitPane to window
         window.add(jSplitPane1);
     }
-    //end of GUI
+    //end of GUI *******************************************************************************************************
+
+    public void updateJTree(DefaultMutableTreeNode baseNode, File[] FileList) {
+        baseNode.removeAllChildren();
+        for (File file : FileList) {
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode(file.getName());
+            if (Files.showList(file.getName()) != null) {
+                for (File file1 : Files.showList(file.getName())) {
+                    node.add(new DefaultMutableTreeNode(file1.getName()));
+                }
+                baseNode.add(node);
+            }
+        }
+    }
+
+    public void updateComboBox(JComboBox comboBox, File[] FileList) {
+        for (File file : FileList) {
+            comboBox.addItem(file.getName());
+        }
+    }
 
     /**
      * creat a panel with given data
+     *
      * @param jPanel JPanel
-     * @param color of panel
+     * @param color  of panel
      * @param border of panel
      * @param height of panel
      * @param weight of panel
@@ -486,8 +603,10 @@ public class GUI {
     }
 
     //------------------------------------------------------------------------------------------------------------------
+
     /**
      * set JTree render
+     *
      * @return defaultTreeCellRenderer
      * copied from stack over flow
      */
@@ -502,6 +621,7 @@ public class GUI {
 
     /**
      * check JTree focus lost of gained
+     *
      * @param tree JTree
      * @return new FocusListener
      */
@@ -522,6 +642,7 @@ public class GUI {
 
     /**
      * check if outside of JTree has clicked - clear selections
+     *
      * @param tree JTree
      * @return new MouseListener
      */
@@ -558,6 +679,7 @@ public class GUI {
         };
     }
     //------------------------------------------------------------------------------------------------------------------
+
     /**
      * class perform listener for top menu
      */
@@ -667,7 +789,7 @@ public class GUI {
                 gbc.anchor = GridBagConstraints.NORTHWEST;
                 JLabel info1 = new JLabel(" Requests in Insomnia are saved in groups.");
                 smallFrame.add(info1, gbc);
-                JLabel name = new JLabel(" Request Name :");
+                JLabel name = new JLabel(" Group Name :");
                 gbc.gridy = 1;
                 gbc.gridx = 0;
                 gbc.weightx = 1;
@@ -686,19 +808,45 @@ public class GUI {
                 gbc.weighty = 1;
                 smallFrame.add(info2, gbc);
                 JComboBox groups = new JComboBox();
+                updateComboBox(groups, Files.showDirectories());
                 gbc.gridy = 4;
                 gbc.gridx = 0;
                 gbc.weightx = 1;
                 gbc.weighty = 1;
                 smallFrame.add(groups, gbc);
-                JButton creat = new JButton("Creat +");
+                JButton creat = new JButton("Create");
+                creat.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String name = requestName.getText();
+                        Files.makeDirectory(name);
+                        updateJTree(node1, Files.showDirectories());
+                        ((DefaultTreeModel) jTree.getModel()).reload();
+                        directory = name;
+                        smallFrame.dispatchEvent(new WindowEvent(smallFrame, WindowEvent.WINDOW_CLOSING));
+
+                    }
+                });
                 gbc.gridy = 5;
                 gbc.gridx = 0;
-                gbc.weightx = 1;
+                gbc.weightx = 3;
                 gbc.weighty = 1;
                 gbc.fill = GridBagConstraints.NONE;
                 gbc.anchor = GridBagConstraints.SOUTHEAST;
                 smallFrame.add(creat, gbc);
+                JButton save = new JButton("Save");
+                save.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        directory = (String) groups.getSelectedItem();
+                        smallFrame.dispatchEvent(new WindowEvent(smallFrame, WindowEvent.WINDOW_CLOSING));
+                    }
+                });
+                gbc.gridy = 5;
+                gbc.gridx = 1;
+                gbc.weightx = 1;
+                gbc.weighty = 1;
+                smallFrame.add(save, gbc);
             }
         }
     }
@@ -845,5 +993,28 @@ public class GUI {
             System.out.println("TrayIcon could not be added.");
         }
     }
-}
 
+    public void sendRequest() {
+        String URL = "http://" + urlField.getText();
+        try {
+            if(method.equals("PUT") || method.equals("POST")){
+                Body = HTTPClient.Request(URL, true, false, true, false,
+                        true, method, null, null, null, directory);
+            }
+            Body = HTTPClient.Request(URL, true, false, true, false,
+                    false, method, null, null, null, directory);
+            massageBody.setLineWrap(true);
+            massageBody.setText(Body);
+            massageBody.setForeground(Color.white);
+            error.setText(String.valueOf(HTTPClient.getStatusCode())+"  "+HTTPClient.statusMassage);
+            tt.setText("   " + HTTPClient.getTakedTime() + " s  " + HTTPClient.takedByte+ "B");
+            for (Map.Entry<String, List<String>> entry : HTTPClient.map.entrySet()) {
+                String temp = nameValue.getText();
+                nameValue.setText(temp + "\n" + entry.getKey() + " : " + entry.getValue());
+            }
+            nameValue.setForeground(Color.lightGray);
+        } catch (IOException ex) {
+            System.out.println("wrong URL");
+        }
+    }
+}
