@@ -2,6 +2,8 @@ import com.sun.net.httpserver.Headers;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -9,9 +11,12 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +47,7 @@ public class GUI {
     JPanel header;
     JTabbedPane tab;
     JPanel jPanel;
+    JPanel header2;
     JLabel error;
     JLabel tt;
     JTree jTree;
@@ -50,6 +56,12 @@ public class GUI {
     DefaultMutableTreeNode node1;
     JTextArea nameValue;
     JTextField urlField;
+    boolean formData;
+    boolean JSON;
+    Boolean binaryData;
+    HashMap<String, String> Data =new HashMap<>();
+    HashMap<String,String> Headers=new HashMap<>();
+    String  stringOfData;
     //check if system tray is on or not
     boolean checkSystemTray = false;
     //go to next line to add component - count lines
@@ -265,8 +277,8 @@ public class GUI {
 
                     massageBody.setText(Files.Body);
                     nameValue.setText(Files.HeadersOfMassage);
-                    error.setText(Files.statusCode+" "+Files.statusMassage+ "   ");
-                    tt.setText(Files.takedTime+" s  " +Files.byteCount + " B");
+                    error.setText(Files.statusCode + " " + Files.statusMassage + "   ");
+                    tt.setText(Files.takedTime + " s  " + Files.byteCount + " B");
                 }
             }
         });
@@ -362,6 +374,23 @@ public class GUI {
         body.setBackground(Color.DARK_GRAY);
         tab.add("body", body);
         JComboBox massageBodyType = new JComboBox();
+        massageBodyType.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                String name = (String) massageBodyType.getSelectedItem();
+                switch (name) {
+                    case "Form Data":
+                        formData=true;
+                        break;
+                    case "JSON":
+                        JSON=true;
+                        break;
+                    case "Binary Data":
+                        binaryData=true;
+                        break;
+                }
+            }
+        });
         massageBodyType.addItem("Form Data");
         massageBodyType.addItem("JSON");
         massageBodyType.addItem("Binary Data");
@@ -489,7 +518,7 @@ public class GUI {
         //add text area to panel
         preview.add(jScrollPane, gbc);
         //creat a panel for header
-        JPanel header2 = new JPanel();
+        header2 = new JPanel();
         header2.setBackground(Color.darkGray);
         //set layout for header
         header2.setLayout(new GridBagLayout());
@@ -996,18 +1025,28 @@ public class GUI {
 
     public void sendRequest() {
         String URL = "http://" + urlField.getText();
-        try {
-            if(method.equals("PUT") || method.equals("POST")){
-                Body = HTTPClient.Request(URL, true, false, true, false,
-                        true, method, null, null, null, directory);
+        for (int i=2;i<header.getComponents().length;i+=2){
+            if(header.getComponent(i) instanceof JTextArea){
+                Data.put(((JTextArea) header.getComponent(i)).getText(),((JTextArea) header.getComponent(i+1)).getText());
             }
-            Body = HTTPClient.Request(URL, true, false, true, false,
-                    false, method, null, null, null, directory);
+        }
+        stringOfData=Data.toString().replace(" ","").replace(",","&");
+        System.out.println(Data);
+        HTTPClient.word1=urlField.getText();
+        try {
+            if (method.equals("PUT") || method.equals("POST")) {
+                Body = HTTPClient.Request(URL, true, false, true, false,
+                        true, Headers,Data,stringOfData,method, null, null, null, directory);
+            }
+            else{
+                Body = HTTPClient.Request(URL, true, false, true, false,
+                        false,Headers,Data,stringOfData,method, null, null, null, directory);
+            }
             massageBody.setLineWrap(true);
             massageBody.setText(Body);
             massageBody.setForeground(Color.white);
-            error.setText(String.valueOf(HTTPClient.getStatusCode())+"  "+HTTPClient.statusMassage);
-            tt.setText("   " + HTTPClient.getTakedTime() + " s  " + HTTPClient.takedByte+ "B");
+            error.setText(String.valueOf(HTTPClient.getStatusCode()) + "  " + HTTPClient.statusMassage);
+            tt.setText("   " + HTTPClient.getTakedTime() + " s  " + HTTPClient.takedByte + "B");
             for (Map.Entry<String, List<String>> entry : HTTPClient.map.entrySet()) {
                 String temp = nameValue.getText();
                 nameValue.setText(temp + "\n" + entry.getKey() + " : " + entry.getValue());

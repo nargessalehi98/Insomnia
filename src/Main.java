@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.io.IOException;
 
 /**
  * Run the program
@@ -21,8 +22,8 @@ public class Main {
         //creat a new GUI
 	GUI gui=new GUI();
     }
-
-//    public static void main(String[] args) throws IOException, InterruptedException {
+//
+//    public static void main(String[] args) throws IOException, InterruptedException, IOException {
 //      HTTPClient h = new HTTPClient();
 //
 //    }

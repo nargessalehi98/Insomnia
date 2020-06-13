@@ -18,6 +18,7 @@ public class Files {
     static String statusCode; //status code of request
     static String statusMassage; //status massage of request
     static String HeadersOfMassage; //Headers of request
+    static String Data;//data of form data or url
 
     /*
      * static constructor to creat directories
@@ -189,7 +190,7 @@ public class Files {
             } else
                 break;
         }
-        Body=Body.replace("body",""); //remove body word
+        Body=Body.replace("body","").replace("[","").replace("]",""); //remove body word
         Body=Body.replace("null","");
         while (!line.startsWith("takedTime")) { //read from headers till takedTime word
             if (scanner.hasNextLine()) {
@@ -204,5 +205,6 @@ public class Files {
         statusCode = scanner.nextLine().replace("statusCode", ""); //set statusCode
         statusMassage=scanner.nextLine().replace("statusMassage",""); //set statusMassage
         byteCount=scanner.nextLine().replace("byteCount",""); //set byteCount
+        Data=scanner.nextLine().replace("data",""); //set data
     }
 }

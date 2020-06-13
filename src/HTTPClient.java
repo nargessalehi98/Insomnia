@@ -22,11 +22,12 @@ public class HTTPClient {
     static String statusMassage; // save status massage
     static String takedTime; // save taked time
     static String takedByte; // save taked byte
+    static String word1; //save url with out 'http://'
     static Map<String, List<String>> map; //save Header of request
     static HashMap<String, String> Headers; // save given header by user
     static String stringOfData; // save given data by user as a string
     static HashMap<String, String> Data; //save given data as HashMap
-    static String word1; //save url with out 'http://'
+
 
     /**
      * Creat a console app
@@ -156,6 +157,7 @@ public class HTTPClient {
                                         ArrayList<String> keyValue2 = new ArrayList<String>(Arrays.asList(keyValue));
                                         Data.put(keyValue2.get(0), keyValue2.get(1));
                                     }
+                                    System.out.println(Data);
 
                                     formData = true;
                                     break;
@@ -235,7 +237,8 @@ public class HTTPClient {
                 continue;
             }
             //send request
-            Request(URL, showHeaders, setHeaders, saveRequest, saveResponse, formData, method, key, value, name, directory);
+            Request(URL, showHeaders, setHeaders, saveRequest, saveResponse, formData
+                    , Headers,Data,stringOfData,method,key, value, name, directory);
             //set value to default for new request
             showHeaders = false;
             setHeaders = false;
@@ -307,7 +310,8 @@ public class HTTPClient {
      * @throws IOException
      */
     public static String Request(String URL, boolean showHeaders, boolean setHeaders,
-                                 boolean saveRequest, boolean saveResponse, boolean formData, String method,
+                                 boolean saveRequest, boolean saveResponse, boolean formData,HashMap<String,String> Headers,
+                                 HashMap<String,String> Data ,String stringOfData,String method,
                                  String key, String value, String name, String directory) throws IOException {
         long start = System.currentTimeMillis();//start counting time
         URL url = new URL(URL); //creat a url
@@ -328,7 +332,7 @@ public class HTTPClient {
         if (formData) { // if user give data
             if (word1.contains("urlencoded")) { //check if its url data
                 try {
-
+                    stringOfData=stringOfData.replace("{","").replace("}","");
                     int data = stringOfData.getBytes(StandardCharsets.UTF_8).length; //get bytes of data
                     yc.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); //set properties
                     yc.setRequestProperty("charset", "utf-8");
@@ -395,8 +399,9 @@ public class HTTPClient {
                     "takedTime" + takedTime + "\n" +
                     "statusCode" + yc.getResponseCode() + "\n" +
                     "statusMassage" + yc.getResponseMessage() + "\n" +
-                    "byteCount" + byteCount;
-            Files.fileWriterRequest(content, directory, String.valueOf(Files.numberOfFiles(directory)));//write content in given directory
+                    "byteCount" + byteCount+"\n"+
+                    "data" + Data;
+                    Files.fileWriterRequest(content, directory, String.valueOf(Files.numberOfFiles(directory)));//write content in given directory
         }
         if (saveResponse) { //if save response is true save response of request
             Files.fileWriterResponse(Body.toString(), name);

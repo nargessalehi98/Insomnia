@@ -1,0 +1,9 @@
+url: http://apapi.haditabatabaei.ir/tests/post/formdata | method: POST | headers: null: null | 
+body[]
+{}
+headers{null=[HTTP/1.1 200 OK], Server=[nginx/1.16.0], ETag=[W/"6-lIxpYaBtIS9RHxkH9XsvCxAaFJ4"], Connection=[keep-alive], Content-Length=[6], Date=[Sat, 13 Jun 2020 09:26:17 GMT], X-Powered-By=[Express], Content-Type=[text/html; charset=utf-8]}
+takedTime2.642
+statusCode200
+statusMassageOK
+byteCount6
+data{}
